@@ -1,11 +1,10 @@
-import axios from 'axios'
 import { NextResponse } from 'next/server'
-
 import prisma from '@/lib/prisma'
+import axios from 'axios'
 
 export async function POST(req) {
     try {
-        // 1. Extract ID first
+        // 1. FIRST get the ID from request body
         const { id } = await req.json()
 
         // 2. Validate ID exists
@@ -50,7 +49,7 @@ export async function POST(req) {
             status = 'down'
         }
 
-        // 6. Update final status
+        // 6. Update final status with transaction
         await prisma.$transaction([
             prisma.site.update({
                 where: { id },
@@ -80,5 +79,7 @@ export async function POST(req) {
             { error: 'Internal server error' },
             { status: 500 }
         )
+    } finally {
+        await prisma.$disconnect()
     }
 }
