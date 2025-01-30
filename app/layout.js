@@ -1,3 +1,4 @@
+import CronInitializer from './init-cron'
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <CronInitializer />
         {children}
       </body>
     </html>
