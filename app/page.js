@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { calculateUptime } from './utils/uptime'
 
 export default function Home() {
   const [sites, setSites] = useState([])
@@ -68,7 +69,10 @@ export default function Home() {
               </button>
             </div>
             <p className="mt-2">Response Time: {site.responseTime}ms</p>
-            <p>Uptime: {site.uptime}</p>
+            <p>Uptime: {calculateUptime(site).toFixed(2)}%</p>
+            <p className="text-sm text-gray-500">
+              Checks: {site.totalChecks} (Successful: {site.successfulChecks})
+            </p>
           </div>
         ))}
       </div>

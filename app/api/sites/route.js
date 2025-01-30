@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { calculateUptime } from "@/app/utils/uptime";
 
 const prisma = new PrismaClient();
 
@@ -17,7 +18,11 @@ export async function POST(req) {
 }
 
 export async function GET() {
-    const sites = await prisma.site.findMany();
+    const sites = await prisma.site.findMany()
+    const sitesWithUptime = sites.map(site => ({
+        ...site,
+        uptime: calculateUptime(site)
+    }))
 
-    return NextResponse.json(sites);
+    return NextResponse.json(sitesWithUptime)
 }
