@@ -7,6 +7,7 @@ export default function Home() {
   const [sites, setSites] = useState([])
   const [newSite, setNewSite] = useState({ name: '', url: '' })
   const [loading, setLoading] = useState(true)
+  const [checkingId, setCheckingId] = useState(null)
 
   useEffect(() => {
     fetchSites()
@@ -61,12 +62,28 @@ export default function Home() {
   }
 
   const checkStatus = async (id) => {
-    setLoading(true)
+    if (checkingId) return
+    setCheckingId(id)
+
     try {
+      // Immediately update local state to "checking"
+      setSites(prev => prev.map(site =>
+        site.id === id ? { ...site, status: 'checking' } : site
+      ))
+
+      // Perform the status check
       await axios.post('/api/check-status', { id })
-      await fetchSites()
+
+      // Force fresh data fetch with cache busting
+      const { data } = await axios.get(`/api/sites?t=${Date.now()}`)
+      setSites(data)
+
+    } catch (error) {
+      console.error('Check status failed:', error)
+      // Revert to previous state on error
+      fetchSites()
     } finally {
-      setLoading(false)
+      setCheckingId(null)
     }
   }
 
@@ -101,17 +118,17 @@ export default function Home() {
             <p className="mb-2">{site.url}</p>
             <div className="flex items-center justify-between">
               <span className={`px-2 py-1 rounded ${site.status === 'up' ? 'bg-green-500' :
-                  site.status === 'down' ? 'bg-red-500' :
-                    'bg-gray-500'
+                site.status === 'down' ? 'bg-red-500' :
+                  'bg-gray-500'
                 } text-white`}>
                 {site.status}
               </span>
               <button
                 onClick={() => checkStatus(site.id)}
-                className="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300"
-                disabled={loading}
+                disabled={checkingId === site.id}
+                className="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300 disabled:opacity-50"
               >
-                {loading ? 'Checking...' : 'Refresh'}
+                {checkingId === site.id ? 'Checking...' : 'Refresh'}
               </button>
             </div>
             <p className="mt-2">Response Time: {site.responseTime || 0}ms</p>
