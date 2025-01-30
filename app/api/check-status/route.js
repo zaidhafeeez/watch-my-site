@@ -11,6 +11,7 @@ await prisma.site.update({
 
 export async function POST(req) {
     try {
+        // Extract ID first
         const { id } = await req.json()
 
         if (!id) {
@@ -20,9 +21,13 @@ export async function POST(req) {
             )
         }
 
-        const site = await prisma.site.findUnique({
-            where: { id }
+        // Update status to checking first
+        await prisma.site.update({
+            where: { id },
+            data: { status: 'checking' }
         })
+
+        const site = await prisma.site.findUnique({ where: { id } })
 
         if (!site) {
             return NextResponse.json(

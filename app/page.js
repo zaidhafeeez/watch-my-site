@@ -101,7 +101,8 @@ export default function Home() {
             <p className="mb-2">{site.url}</p>
             <div className="flex items-center justify-between">
               <span className={`px-2 py-1 rounded ${site.status === 'up' ? 'bg-green-500' :
-                site.status === 'down' ? 'bg-red-500' : 'bg-gray-500'
+                  site.status === 'down' ? 'bg-red-500' :
+                    'bg-gray-500'
                 } text-white`}>
                 {site.status}
               </span>
