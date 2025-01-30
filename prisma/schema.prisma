@@ -15,12 +15,22 @@ datasource db {
 }
 
 model Site {
-  id           String   @id @default(cuid())
+  id           String        @id @default(cuid())
   name         String
   url          String
-  status       String   @default("unknown")
-  uptime       Float    @default(0)
-  responseTime Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status       String        @default("unknown")
+  uptime       Float         @default(0)
+  responseTime Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  StatusCheck  StatusCheck[]
+}
+
+model StatusCheck {
+  id           String   @id @default(cuid())
+  siteId       String
+  status       String
+  timestamp    DateTime @default(now())
+  responseTime Int
+  site         Site     @relation(fields: [siteId], references: [id])
 }

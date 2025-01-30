@@ -12,22 +12,46 @@ export async function POST(req) {
         const start = Date.now()
         const response = await axios.get(site.url, { timeout: 5000 })
         const responseTime = Date.now() - start
+        const isUp = response.status === 200
 
-        await prisma.site.update({
-            where: { id },
-            data: {
-                status: response.status === 200 ? 'up' : 'down',
-                responseTime,
-                uptime: response.status === 200 ? site.uptime + 1 : site.uptime
-            }
-        })
+        // Update site status and metrics
+        await prisma.$transaction([
+            prisma.site.update({
+                where: { id },
+                data: {
+                    status: isUp ? 'up' : 'down',
+                    responseTime,
+                    totalChecks: { increment: 1 },
+                    successfulChecks: { increment: isUp ? 1 : 0 }
+                }
+            }),
+            prisma.statusCheck.create({
+                data: {
+                    siteId: id,
+                    status: isUp ? 'up' : 'down',
+                    responseTime
+                }
+            })
+        ])
 
         return NextResponse.json({ status: 'success' })
     } catch (error) {
-        await prisma.site.update({
-            where: { id },
-            data: { status: 'down' }
-        })
+        await prisma.$transaction([
+            prisma.site.update({
+                where: { id },
+                data: {
+                    status: 'down',
+                    totalChecks: { increment: 1 }
+                }
+            }),
+            prisma.statusCheck.create({
+                data: {
+                    siteId: id,
+                    status: 'down',
+                    responseTime: 0
+                }
+            })
+        ])
         return NextResponse.json({ status: 'error' })
     }
 }
