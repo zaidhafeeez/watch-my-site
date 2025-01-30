@@ -3,12 +3,6 @@ import { NextResponse } from 'next/server'
 
 import prisma from '@/lib/prisma'
 
-// Add initial status update before the check
-await prisma.site.update({
-    where: { id },
-    data: { status: 'checking' }
-})
-
 export async function POST(req) {
     try {
         // 1. Extract ID first
