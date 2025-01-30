@@ -5,53 +5,76 @@ import axios from 'axios'
 const prisma = new PrismaClient()
 
 export async function POST(req) {
-    const { id } = await req.json()
-    const site = await prisma.site.findUnique({ where: { id } })
-
     try {
-        const start = Date.now()
-        const response = await axios.get(site.url, { timeout: 5000 })
-        const responseTime = Date.now() - start
-        const isUp = response.status === 200
+        const { id } = await req.json()
 
-        // Update site status and metrics
+        if (!id) {
+            return NextResponse.json(
+                { error: 'Missing site ID' },
+                { status: 400 }
+            )
+        }
+
+        const site = await prisma.site.findUnique({
+            where: { id }
+        })
+
+        if (!site) {
+            return NextResponse.json(
+                { error: 'Site not found' },
+                { status: 404 }
+            )
+        }
+
+        let status = 'down'
+        let responseTime = 0
+        const start = Date.now()
+
+        try {
+            const response = await axios.get(site.url, {
+                timeout: 5000,
+                validateStatus: () => true // Accept all status codes
+            })
+            responseTime = Date.now() - start
+            status = response.status === 200 ? 'up' : 'down'
+        } catch (error) {
+            responseTime = Date.now() - start
+            status = 'down'
+        }
+
         await prisma.$transaction([
             prisma.site.update({
                 where: { id },
                 data: {
-                    status: isUp ? 'up' : 'down',
+                    status,
                     responseTime,
                     totalChecks: { increment: 1 },
-                    successfulChecks: { increment: isUp ? 1 : 0 }
+                    successfulChecks: {
+                        increment: status === 'up' ? 1 : 0
+                    }
                 }
             }),
             prisma.statusCheck.create({
                 data: {
                     siteId: id,
-                    status: isUp ? 'up' : 'down',
+                    status,
                     responseTime
                 }
             })
         ])
 
-        return NextResponse.json({ status: 'success' })
+        return NextResponse.json({
+            status: 'success',
+            siteStatus: status
+        })
+
     } catch (error) {
-        await prisma.$transaction([
-            prisma.site.update({
-                where: { id },
-                data: {
-                    status: 'down',
-                    totalChecks: { increment: 1 }
-                }
-            }),
-            prisma.statusCheck.create({
-                data: {
-                    siteId: id,
-                    status: 'down',
-                    responseTime: 0
-                }
-            })
-        ])
-        return NextResponse.json({ status: 'error' })
+        console.error('Error checking status:', error)
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        )
+    } finally {
+        await prisma.$disconnect()
     }
 }

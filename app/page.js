@@ -24,8 +24,13 @@ export default function Home() {
   }
 
   const checkStatus = async (id) => {
-    await axios.post('/api/check-status', { id })
-    fetchSites()
+    try {
+      await axios.post('/api/check-status', { id })
+      fetchSites()
+    } catch (error) {
+      console.error('Error checking status:', error)
+      alert(`Error checking status: ${error.response?.data?.error || error.message}`)
+    }
   }
 
   return (
