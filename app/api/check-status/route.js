@@ -4,6 +4,12 @@ import axios from 'axios'
 
 const prisma = new PrismaClient()
 
+// Add initial status update before the check
+await prisma.site.update({
+    where: { id },
+    data: { status: 'checking' }
+})
+
 export async function POST(req) {
     try {
         const { id } = await req.json()

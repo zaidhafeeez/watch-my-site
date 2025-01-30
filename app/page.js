@@ -6,6 +6,7 @@ import { calculateUptime } from './utils/uptime'
 export default function Home() {
   const [sites, setSites] = useState([])
   const [newSite, setNewSite] = useState({ name: '', url: '' })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchSites()
@@ -18,18 +19,25 @@ export default function Home() {
 
   const addSite = async (e) => {
     e.preventDefault()
-    await axios.post('/api/sites', newSite)
+    try {
+      const response = await axios.post('/api/sites', newSite)
+      // Immediately check status for new site
+      await axios.post('/api/check-status', { id: response.data.id })
+      fetchSites()
+    } catch (error) {
+      console.error('Error adding site:', error)
+      alert('Failed to add site')
+    }
     setNewSite({ name: '', url: '' })
-    fetchSites()
   }
 
   const checkStatus = async (id) => {
+    setLoading(true)
     try {
       await axios.post('/api/check-status', { id })
-      fetchSites()
-    } catch (error) {
-      console.error('Error checking status:', error)
-      alert(`Error checking status: ${error.response?.data?.error || error.message}`)
+      await fetchSites()
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -63,20 +71,23 @@ export default function Home() {
             <h2 className="text-xl font-bold mb-2">{site.name}</h2>
             <p className="mb-2">{site.url}</p>
             <div className="flex items-center justify-between">
-              <span className={`px-2 py-1 rounded ${site.status === 'up' ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+              <span className={`px-2 py-1 rounded ${site.status === 'up' ? 'bg-green-500' :
+                site.status === 'down' ? 'bg-red-500' : 'bg-gray-500'
+                } text-white`}>
                 {site.status}
               </span>
               <button
                 onClick={() => checkStatus(site.id)}
                 className="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300"
+                disabled={loading}
               >
-                Refresh
+                {loading ? 'Checking...' : 'Refresh'}
               </button>
             </div>
-            <p className="mt-2">Response Time: {site.responseTime}ms</p>
+            <p className="mt-2">Response Time: {site.responseTime || 0}ms</p>
             <p>Uptime: {calculateUptime(site).toFixed(2)}%</p>
             <p className="text-sm text-gray-500">
-              Checks: {site.totalChecks} (Successful: {site.successfulChecks})
+              Checks: {site.totalChecks || 0} (Successful: {site.successfulChecks || 0})
             </p>
           </div>
         ))}
