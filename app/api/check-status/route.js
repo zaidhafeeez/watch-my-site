@@ -11,9 +11,10 @@ await prisma.site.update({
 
 export async function POST(req) {
     try {
-        // Extract ID first
+        // 1. Extract ID first
         const { id } = await req.json()
 
+        // 2. Validate ID exists
         if (!id) {
             return NextResponse.json(
                 { error: 'Missing site ID' },
@@ -21,13 +22,16 @@ export async function POST(req) {
             )
         }
 
-        // Update status to checking first
+        // 3. Update status to checking
         await prisma.site.update({
             where: { id },
             data: { status: 'checking' }
         })
 
-        const site = await prisma.site.findUnique({ where: { id } })
+        // 4. Get site details
+        const site = await prisma.site.findUnique({
+            where: { id }
+        })
 
         if (!site) {
             return NextResponse.json(
@@ -36,22 +40,23 @@ export async function POST(req) {
             )
         }
 
+        // 5. Perform status check
         let status = 'down'
         let responseTime = 0
-        const start = Date.now()
 
         try {
+            const start = Date.now()
             const response = await axios.get(site.url, {
                 timeout: 5000,
-                validateStatus: () => true // Accept all status codes
+                validateStatus: () => true
             })
             responseTime = Date.now() - start
             status = response.status === 200 ? 'up' : 'down'
         } catch (error) {
-            responseTime = Date.now() - start
             status = 'down'
         }
 
+        // 6. Update final status
         await prisma.$transaction([
             prisma.site.update({
                 where: { id },
@@ -73,18 +78,13 @@ export async function POST(req) {
             })
         ])
 
-        return NextResponse.json({
-            status: 'success',
-            siteStatus: status
-        })
+        return NextResponse.json({ success: true })
 
     } catch (error) {
-        console.error('Error checking status:', error)
+        console.error('[STATUS_CHECK_ERROR]', error)
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }
         )
-    } finally {
-        await prisma.$disconnect()
     }
 }
