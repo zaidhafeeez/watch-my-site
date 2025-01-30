@@ -41,9 +41,6 @@ export async function POST(req) {
             data: {
                 name: name.trim(),
                 url: url.trim(),
-                status: 'checking',
-                successfulChecks: 0,
-                totalChecks: 0
             }
         })
 

@@ -15,15 +15,16 @@ datasource db {
 }
 
 model Site {
-  id           String        @id @default(cuid())
-  name         String
-  url          String
-  status       String        @default("unknown")
-  uptime       Float         @default(0)
-  responseTime Int           @default(0)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  StatusCheck  StatusCheck[]
+  id               String        @id @default(cuid())
+  name             String
+  url              String
+  status           String        @default("checking")
+  successfulChecks Int           @default(0)
+  totalChecks      Int           @default(0)
+  responseTime     Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  StatusCheck      StatusCheck[]
 }
 
 model StatusCheck {
