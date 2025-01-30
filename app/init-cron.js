@@ -1,9 +1,11 @@
+// app/init-cron.js
 import { startCronJobs } from '@/lib/cron'
+import { startDataCleanupJob } from '@/lib/cleanup-old-data'
 
-// Initialize cron jobs when the server starts
+// Initialize all cron jobs
 startCronJobs()
+startDataCleanupJob()
 
-// Optional: Export a dummy component
 export default function CronInitializer() {
   return null
 }
