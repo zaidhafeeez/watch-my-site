@@ -20,29 +20,41 @@ export default function Home() {
   const addSite = async (e) => {
     e.preventDefault()
     try {
-      // Validate input before sending
-      if (!newSite.name.trim() || !newSite.url.trim()) {
+      // Trim and validate inputs
+      const trimmedName = newSite.name.trim()
+      const trimmedUrl = newSite.url.trim()
+
+      if (!trimmedName || !trimmedUrl) {
         alert('Please fill in both name and URL fields')
         return
       }
 
-      const response = await axios.post('/api/sites', newSite)
+      // Basic URL validation
+      try {
+        new URL(trimmedUrl)
+      } catch {
+        alert('Please enter a valid URL (include http:// or https://)')
+        return
+      }
 
-      // Check if creation was successful
+      const response = await axios.post('/api/sites', {
+        name: trimmedName,
+        url: trimmedUrl
+      })
+
       if (response.data.id) {
-        // Immediately check status with error handling
         try {
           await axios.post('/api/check-status', { id: response.data.id })
         } catch (checkError) {
           console.error('Initial check failed:', checkError)
-          alert('Site created but initial check failed')
         }
-        fetchSites()
+        await fetchSites()
       }
 
     } catch (error) {
       console.error('Add site error:', error)
-      alert(`Failed to add site: ${error.response?.data?.error || error.message}`)
+      const errorMessage = error.response?.data?.error || error.message
+      alert(`Failed to add site: ${errorMessage}`)
     } finally {
       setNewSite({ name: '', url: '' })
     }

@@ -8,7 +8,7 @@ export async function POST(req) {
         const { name, url } = await req.json()
 
         // Validate input
-        if (!name || !url) {
+        if (!name?.trim() || !url?.trim()) {
             return NextResponse.json(
                 { error: 'Name and URL are required' },
                 { status: 400 }
@@ -25,10 +25,22 @@ export async function POST(req) {
             )
         }
 
+        // Check for existing URL
+        const existingSite = await prisma.site.findFirst({
+            where: { url }
+        })
+
+        if (existingSite) {
+            return NextResponse.json(
+                { error: 'URL already exists' },
+                { status: 409 }
+            )
+        }
+
         const site = await prisma.site.create({
             data: {
-                name,
-                url,
+                name: name.trim(),
+                url: url.trim(),
                 status: 'checking',
                 successfulChecks: 0,
                 totalChecks: 0
@@ -38,13 +50,20 @@ export async function POST(req) {
         return NextResponse.json(site)
 
     } catch (error) {
-        console.error('Database error:', error)
+        console.error('[SITES_POST] Error:', error)
+
+        // Handle Prisma errors
+        if (error.code === 'P2002') {
+            return NextResponse.json(
+                { error: 'Site with this URL already exists' },
+                { status: 409 }
+            )
+        }
+
         return NextResponse.json(
-            { error: 'Failed to create site' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
