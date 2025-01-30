@@ -49,6 +49,13 @@ export async function POST(req) {
             status = 'down'
         }
 
+        if (status === 'down') {
+            await prisma.site.update({
+                where: { id },
+                data: { status: 'down' }
+            })
+        }
+
         // 6. Update final status with transaction
         await prisma.$transaction([
             prisma.site.update({
