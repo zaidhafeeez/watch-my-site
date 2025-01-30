@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
+import { NextResponse } from 'next/server'
 
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma'
 
 // Add initial status update before the check
 await prisma.site.update({
