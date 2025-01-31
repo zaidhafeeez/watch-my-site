@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -50,6 +52,8 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
+  const session = getServerSession(authOptions);
+
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body className={`
@@ -62,7 +66,7 @@ export default function RootLayout({ children }) {
       `}>
         <CronInitializer />
 
-        <Navbar />
+        <Navbar session={session} />
 
         <main className="flex-1 pt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
