@@ -6,12 +6,9 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16">
                     <div className="flex items-center">
-                        <Link
-                            href="/"
-                            className="flex-shrink-0 flex items-center space-x-2"
-                        >
+                        <Link href="/" className="flex-shrink-0 flex items-center space-x-2">
                             <svg
-                                className="h-8 w-8 text-blue-600 dark:text-blue-400"
+                                className="h-8 w-8 text-purple-600 dark:text-purple-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -20,11 +17,11 @@ export default function Navbar() {
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth={2}
-                                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                 />
                             </svg>
                             <span className="text-xl font-bold text-gray-900 dark:text-white hidden md:block">
-                                Status Monitor
+                                Watch My Site
                             </span>
                         </Link>
                     </div>

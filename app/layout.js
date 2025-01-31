@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    default: "Website Status Monitor",
-    template: "%s | Status Monitor"
+    default: "Watch My Site",
+    template: "%s | Watch My Site"
   },
   description: "Real-time website monitoring with uptime statistics and performance metrics",
   keywords: ["website monitoring", "uptime checker", "status page", "performance metrics"],
