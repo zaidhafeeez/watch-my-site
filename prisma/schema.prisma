@@ -14,6 +14,30 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+model Site {
+  id               String        @id @default(cuid())
+  name             String
+  url              String
+  status           String        @default("checking")
+  successfulChecks Int           @default(0)
+  totalChecks      Int           @default(0)
+  responseTime     Int           @default(0)
+  userId           String
+  user             User          @relation(fields: [userId], references: [id])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  checks           StatusCheck[]
+}
+
+model StatusCheck {
+  id           String   @id @default(cuid())
+  siteId       String
+  status       String
+  responseTime Int
+  timestamp    DateTime @default(now())
+  site         Site     @relation(fields: [siteId], references: [id])
+}
+
 model User {
   id                 String    @id @default(cuid())
   name               String?
@@ -27,34 +51,10 @@ model User {
   updatedAt          DateTime  @updatedAt
 }
 
-model Site {
-  id               String        @id @default(cuid())
-  name             String
-  url              String
-  status           String        @default("checking")
-  successfulChecks Int           @default(0)
-  totalChecks      Int           @default(0)
-  responseTime     Int           @default(0)
-  userId           String
-  user             User          @relation(fields: [userId], references: [id])
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  StatusCheck      StatusCheck[]
-}
-
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
-}
-
-model StatusCheck {
-  id           String   @id @default(cuid())
-  siteId       String
-  status       String
-  responseTime Int
-  timestamp    DateTime @default(now()) // Already exists
-  site         Site     @relation(fields: [siteId], references: [id])
 }
