@@ -4,11 +4,12 @@ import prisma from '@/lib/prisma'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 
-export const authOptions = {
+// 1. Define auth options
+const authOptions = {
     adapter: PrismaAdapter(prisma),
     providers: [
         CredentialsProvider({
-            name: 'Credentials',
+            name: 'credentials',
             credentials: {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" }
@@ -18,33 +19,33 @@ export const authOptions = {
                     where: { email: credentials.email }
                 })
 
-                if (user && bcrypt.compareSync(credentials.password, user.password)) {
-                    return user
-                }
-                return null
+                if (!user) return null
+
+                const isValid = await bcrypt.compare(
+                    credentials.password,
+                    user.password
+                )
+
+                return isValid ? user : null
             }
         })
     ],
-    session: {
-        strategy: "jwt"
-    },
-    pages: {
-        signIn: '/auth/signin'
-    },
+    session: { strategy: "jwt" },
+    pages: { signIn: "/auth/signin" },
     callbacks: {
         async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id
-                token.name = user.name
-                token.email = user.email
-            }
+            if (user) token.id = user.id
             return token
         },
         async session({ session, token }) {
             session.user.id = token.id
-            session.user.name = token.name
-            session.user.email = token.email
             return session
         }
     }
 }
+
+// 2. Create handler
+const handler = NextAuth(authOptions)
+
+// 3. Export named handlers
+export { handler as GET, handler as POST }
