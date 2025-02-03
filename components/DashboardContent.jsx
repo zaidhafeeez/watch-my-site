@@ -24,6 +24,20 @@ export default function DashboardContent({ initialSites, user }) {
         setSites(updatedSites)
     }
 
+    const handleSiteAdded = (newSite, optimisticId = null) => {
+        if (!newSite && optimisticId) {
+            // Remove optimistic site on error
+            setSites(prev => prev.filter(site => site.id !== optimisticId))
+            return
+        }
+
+        setSites(prev => {
+            // Remove optimistic site if it exists
+            const filtered = prev.filter(site => site.id !== optimisticId)
+            return [...filtered, newSite]
+        })
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto px-4 py-6">
@@ -35,7 +49,7 @@ export default function DashboardContent({ initialSites, user }) {
                             <p className="text-gray-500 dark:text-gray-400">Welcome back, {user.name}</p>
                         </div>
                         <div className="px-6 pb-6 md:py-6">
-                            <AddSiteForm userId={user.id} onSiteAdded={(newSite) => setSites([...sites, newSite])} />
+                            <AddSiteForm userId={user.id} onSiteAdded={handleSiteAdded} />
                         </div>
                     </div>
                 </div>

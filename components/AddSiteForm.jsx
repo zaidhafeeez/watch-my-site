@@ -1,16 +1,34 @@
 'use client'
 
-import { toast } from 'sonner'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function AddSiteForm({ userId, onSiteAdded }) {
     const [name, setName] = useState('')
     const [url, setUrl] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        
-        const toastId = toast.loading('Adding site...')
+        setIsSubmitting(true)
+
+        // Create optimistic site
+        const optimisticSite = {
+            id: `temp-${Date.now()}`,
+            name: name.trim(),
+            url: url.trim(),
+            status: 'checking',
+            successfulChecks: 0,
+            totalChecks: 0,
+            responseTime: 0,
+            userId,
+            checks: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        }
+
+        // Optimistic update
+        onSiteAdded?.(optimisticSite)
         
         try {
             const response = await fetch('/api/sites', {
@@ -25,14 +43,19 @@ export default function AddSiteForm({ userId, onSiteAdded }) {
                 throw new Error(data.error || 'Failed to add site')
             }
 
-            toast.dismiss(toastId)
-            toast.success(data.message || 'Site added successfully')
+            // Update with real data
             onSiteAdded?.(data.site)
+            toast.success(data.message || 'Site added successfully')
+            
+            // Reset form
             setName('')
             setUrl('')
         } catch (error) {
-            toast.dismiss(toastId)
             toast.error(error.message)
+            // Remove optimistic site on error
+            onSiteAdded?.(null, optimisticSite.id)
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -71,9 +94,20 @@ export default function AddSiteForm({ userId, onSiteAdded }) {
                 </div>
                 <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 flex items-center"
                 >
-                    Add Site
+                    {isSubmitting ? (
+                        <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Adding...
+                        </>
+                    ) : (
+                        'Add Site'
+                    )}
                 </button>
             </form>
         </div>

@@ -19,17 +19,12 @@ export async function POST(req) {
             )
         }
 
-        // Verify user exists in database
+        // Verify user with caching
         const user = await prisma.user.findUnique({
-            where: { id: session.user.id }
+            where: { id: session.user.id },
+            select: { id: true },
+            cacheStrategy: { ttl: 60 }
         });
-
-        if (!user) {
-            return NextResponse.json(
-                { error: 'User not found' },
-                { status: 404 }
-            )
-        }
 
         const { name, url } = await req.json()
 
@@ -51,31 +46,37 @@ export async function POST(req) {
             )
         }
 
-        // Check for existing URL for this user
+        // Check for existing URL for this user with cache
         const existingSite = await prisma.site.findFirst({
             where: {
                 url,
                 userId: user.id
-            }
+            },
+            select: { id: true },
+            cacheStrategy: { ttl: 30 }
         })
 
         if (existingSite) {
             return NextResponse.json(
-                { error: 'URL already exists in your account' },
+                { error: 'URL already exists' },
                 { status: 409 }
             )
         }
 
-        // Create site with explicit transaction
-        const site = await prisma.$transaction(async (tx) => {
-            return tx.site.create({
-                data: {
-                    name: name.trim(),
-                    url: url.trim(),
-                    userId: user.id
+        // Create site with optimized transaction
+        const site = await prisma.site.create({
+            data: {
+                name: name.trim(),
+                url: url.trim(),
+                userId: user.id
+            },
+            include: {
+                checks: {
+                    orderBy: { timestamp: 'desc' },
+                    take: 10
                 }
-            });
-        });
+            }
+        })
 
         return NextResponse.json({ 
             site,
@@ -84,23 +85,8 @@ export async function POST(req) {
 
     } catch (error) {
         console.error('[SITES_POST] Error:', error);
-
-        if (error.code === 'P2002') {
-            return NextResponse.json(
-                { error: 'Site already exists in your account' },
-                { status: 409 }
-            );
-        }
-
-        if (error.code === 'P2003') {
-            return NextResponse.json(
-                { error: 'Invalid user reference' },
-                { status: 400 }
-            );
-        }
-
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: 'Failed to add site' },
             { status: 500 }
         );
     }
