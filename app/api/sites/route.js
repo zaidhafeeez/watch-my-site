@@ -124,7 +124,8 @@ export async function GET() {
                     orderBy: { timestamp: "desc" },
                     take: 10
                 }
-            }
+            },
+            cacheStrategy: { ttl: 30 } // Cache for 30 seconds
         })
 
         const sitesWithHealth = sites.map(site => ({

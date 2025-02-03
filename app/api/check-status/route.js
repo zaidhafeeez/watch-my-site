@@ -15,7 +15,8 @@ export async function POST(req) {
         // Use a single query instead of transaction in Edge
         const site = await prisma.site.findUnique({
             where: { id },
-            select: { url: true }
+            select: { url: true },
+            cacheStrategy: { ttl: 60 } // Cache for 1 minute
         })
 
         if (!site) {
