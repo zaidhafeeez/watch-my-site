@@ -4,6 +4,8 @@ import { authOptions } from "@/app/auth/options";
 import prisma from "@/lib/prisma";
 import { getSiteHealth } from "@/app/utils/monitoring";
 
+export const runtime = 'edge'
+export const preferredRegion = 'auto'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req) {
