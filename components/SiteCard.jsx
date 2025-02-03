@@ -1,11 +1,25 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from "next/link"
 import { toast } from "sonner"
-import { getSiteHealth, formatDuration } from "@/app/utils/monitoring"
+import { getSiteHealth } from "@/app/utils/monitoring"
+import { getRelativeTimeString } from "@/app/utils/time"
 
 export default function SiteCard({ site }) {
     const health = getSiteHealth(site)
+    const [lastChecked, setLastChecked] = useState('just now')
+
+    useEffect(() => {
+        const updateTime = () => {
+            setLastChecked(getRelativeTimeString(health.lastCheck))
+        }
+        
+        updateTime()
+        const interval = setInterval(updateTime, 1000)
+        
+        return () => clearInterval(interval)
+    }, [health.lastCheck])
 
     const refreshSite = async (siteId) => {
         const toastId = toast.loading('Refreshing site status...')
@@ -66,7 +80,7 @@ export default function SiteCard({ site }) {
                     <div className="flex justify-between items-center">
                         <span className="text-gray-600 dark:text-gray-400">Last Checked</span>
                         <span className="text-gray-500">
-                            {formatDuration(Date.now() - new Date(health.lastCheck).getTime())} ago
+                            {lastChecked} ago
                         </span>
                     </div>
                 </div>
