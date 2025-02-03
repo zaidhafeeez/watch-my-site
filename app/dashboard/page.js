@@ -32,13 +32,15 @@ export default async function Dashboard() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto px-4 py-6">
                 {/* Header Section */}
-                <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-                            <p className="text-gray-500">Welcome back, {session.user.name}</p>
+                <div className="mb-8">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+                        <div className="p-6">
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Dashboard</h1>
+                            <p className="text-gray-500 dark:text-gray-400">Welcome back, {session.user.name}</p>
                         </div>
-                        <AddSiteForm userId={session.user.id} />
+                        <div className="px-6 pb-6 md:py-6">
+                            <AddSiteForm userId={session.user.id} />
+                        </div>
                     </div>
                 </div>
 
