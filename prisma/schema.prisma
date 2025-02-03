@@ -22,6 +22,8 @@ model Site {
   successfulChecks Int           @default(0)
   totalChecks      Int           @default(0)
   responseTime     Int           @default(0)
+  userId           String? // Make nullable temporarily
+  user             User?         @relation(fields: [userId], references: [id])
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   StatusCheck      StatusCheck[]
@@ -32,6 +34,27 @@ model StatusCheck {
   siteId       String
   status       String
   responseTime Int
-  timestamp    DateTime @default(now()) // Already exists
+  timestamp    DateTime @default(now())
   site         Site     @relation(fields: [siteId], references: [id])
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  name               String?
+  email              String?   @unique
+  password           String?
+  emailVerified      DateTime?
+  verificationToken  String?   @unique
+  verificationExpiry DateTime?
+  sites              Site[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
