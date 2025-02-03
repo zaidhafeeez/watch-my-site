@@ -22,11 +22,11 @@ model Site {
   successfulChecks Int           @default(0)
   totalChecks      Int           @default(0)
   responseTime     Int           @default(0)
-  userId           String? // Make nullable temporarily
-  user             User?         @relation(fields: [userId], references: [id])
+  userId           String
+  user             User          @relation(fields: [userId], references: [id])
+  checks           StatusCheck[] // This line must exist
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
-  StatusCheck      StatusCheck[]
 }
 
 model StatusCheck {

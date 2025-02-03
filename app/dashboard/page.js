@@ -15,7 +15,7 @@ export default async function Dashboard() {
     const sites = await prisma.site.findMany({
         where: { userId: session.user.id },
         include: {
-            checks: {
+            checks: {  // Must match schema relation name
                 orderBy: { timestamp: "desc" },
                 take: 10
             }
@@ -56,7 +56,7 @@ function SiteCard({ site }) {
                     <p className="text-gray-500 text-sm break-all">{site.url}</p>
                 </div>
                 <span className={`px-2 py-1 rounded-full text-sm ${site.status === 'up' ? 'bg-green-100 text-green-800' :
-                        site.status === 'down' ? 'bg-red-100 text-red-800' : 'bg-gray-100'
+                    site.status === 'down' ? 'bg-red-100 text-red-800' : 'bg-gray-100'
                     }`}>
                     {site.status}
                 </span>
