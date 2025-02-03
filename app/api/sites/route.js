@@ -76,14 +76,17 @@ export async function POST(req) {
             });
         });
 
-        return NextResponse.json(site);
+        return NextResponse.json({ 
+            site,
+            message: 'Site added successfully'
+        });
 
     } catch (error) {
         console.error('[SITES_POST] Error:', error);
 
         if (error.code === 'P2002') {
             return NextResponse.json(
-                { error: 'Site creation conflict' },
+                { error: 'Site already exists in your account' },
                 { status: 409 }
             );
         }

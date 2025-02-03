@@ -2,13 +2,20 @@
 
 import Link from "next/link"
 import { calculateUptime } from "@/app/utils/uptime"
+import { toast } from "sonner"
 
 export default function SiteCard({ site }) {
     const uptime = calculateUptime(site)
 
     const refreshSite = async (siteId) => {
-        // Add refresh logic here
-        console.log('Refreshing site:', siteId)
+        try {
+            toast.loading('Refreshing site status...')
+            // Add your refresh logic here
+            await new Promise(resolve => setTimeout(resolve, 1000)) // Simulated delay
+            toast.success('Site status updated successfully')
+        } catch (error) {
+            toast.error('Failed to refresh site status')
+        }
     }
 
     return (

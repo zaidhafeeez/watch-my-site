@@ -7,6 +7,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/auth/options"
 import ClientProvider from '@/components/ClientProvider';
+import { Toaster } from 'sonner';
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -79,6 +80,7 @@ export default function RootLayout({ children }) {
 
           <Footer />
         </ClientProvider>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );
