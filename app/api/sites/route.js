@@ -18,6 +18,18 @@ export async function POST(req) {
             )
         }
 
+        // Verify user exists in database
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id }
+        });
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'User not found' },
+                { status: 404 }
+            )
+        }
+
         const { name, url } = await req.json()
 
         // Validate input
@@ -42,7 +54,7 @@ export async function POST(req) {
         const existingSite = await prisma.site.findFirst({
             where: {
                 url,
-                userId: session.user.id
+                userId: user.id
             }
         })
 
@@ -53,30 +65,40 @@ export async function POST(req) {
             )
         }
 
-        const site = await prisma.site.create({
-            data: {
-                name: name.trim(),
-                url: url.trim(),
-                userId: session.user.id  // Associate with user
-            }
-        })
+        // Create site with explicit transaction
+        const site = await prisma.$transaction(async (tx) => {
+            return tx.site.create({
+                data: {
+                    name: name.trim(),
+                    url: url.trim(),
+                    userId: user.id
+                }
+            });
+        });
 
-        return NextResponse.json(site)
+        return NextResponse.json(site);
 
     } catch (error) {
-        console.error('[SITES_POST] Error:', error)
+        console.error('[SITES_POST] Error:', error);
 
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { error: 'Site creation conflict' },
                 { status: 409 }
-            )
+            );
+        }
+
+        if (error.code === 'P2003') {
+            return NextResponse.json(
+                { error: 'Invalid user reference' },
+                { status: 400 }
+            );
         }
 
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }
-        )
+        );
     }
 }
 

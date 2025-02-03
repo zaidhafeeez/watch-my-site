@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import prisma from "@/lib/prisma"
 import AddSiteForm from "@/components/AddSiteForm"
+import { calculateUptime } from "../utils/uptime"
 
 export default async function Dashboard() {
     const session = await getServerSession(authOptions)
@@ -85,13 +86,12 @@ function SiteCard({ site }) {
                         <h2 className="font-semibold text-lg text-gray-900 dark:text-white">{site.name}</h2>
                         <p className="text-gray-500 text-sm break-all">{site.url}</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        site.status === 'up' 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                            : site.status === 'down' 
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' 
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${site.status === 'up'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : site.status === 'down'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                        }`}>
                         {site.status}
                     </span>
                 </div>
