@@ -8,12 +8,16 @@ export default function SiteCard({ site }) {
     const uptime = calculateUptime(site)
 
     const refreshSite = async (siteId) => {
+        const toastId = toast.loading('Refreshing site status...')
+        
         try {
-            toast.loading('Refreshing site status...')
             // Add your refresh logic here
             await new Promise(resolve => setTimeout(resolve, 1000)) // Simulated delay
+            
+            toast.dismiss(toastId)
             toast.success('Site status updated successfully')
         } catch (error) {
+            toast.dismiss(toastId)
             toast.error('Failed to refresh site status')
         }
     }

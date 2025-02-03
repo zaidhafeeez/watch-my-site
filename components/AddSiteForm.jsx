@@ -1,4 +1,3 @@
-
 'use client'
 
 import { toast } from 'sonner'
@@ -11,8 +10,9 @@ export default function AddSiteForm({ userId }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         
+        const toastId = toast.loading('Adding site...')
+        
         try {
-            toast.loading('Adding site...')
             const response = await fetch('/api/sites', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -25,10 +25,12 @@ export default function AddSiteForm({ userId }) {
                 throw new Error(data.error || 'Failed to add site')
             }
 
+            toast.dismiss(toastId)
             toast.success(data.message || 'Site added successfully')
             setName('')
             setUrl('')
         } catch (error) {
+            toast.dismiss(toastId)
             toast.error(error.message)
         }
     }
