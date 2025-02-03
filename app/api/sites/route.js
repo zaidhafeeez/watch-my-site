@@ -4,8 +4,7 @@ import { authOptions } from "@/app/auth/options";
 import prisma from "@/lib/prisma";
 import { getSiteHealth } from "@/app/utils/monitoring";
 
-export const runtime = 'edge'
-export const preferredRegion = 'auto'
+// Remove edge runtime config for auth routes
 export const dynamic = 'force-dynamic'
 
 export async function POST(req) {
