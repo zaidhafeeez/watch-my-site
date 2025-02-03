@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma-edge";
 
 export const runtime = 'edge'
 export const preferredRegion = 'auto'
@@ -11,6 +11,8 @@ export async function POST(req) {
         const { id } = await req.json()
 
         const startTime = Date.now()
+        
+        // Use a single query instead of transaction in Edge
         const site = await prisma.site.findUnique({
             where: { id },
             select: { url: true }
@@ -23,7 +25,6 @@ export async function POST(req) {
             )
         }
 
-        // Perform status check using native fetch in edge runtime
         const response = await fetch(site.url, {
             method: 'GET',
             headers: {
@@ -33,28 +34,27 @@ export async function POST(req) {
 
         const endTime = Date.now()
         const responseTime = endTime - startTime
-
         const status = response.ok ? 'up' : 'down'
 
-        // Update site status and metrics
-        await prisma.$transaction([
-            prisma.statusCheck.create({
-                data: {
-                    siteId: id,
-                    status,
-                    responseTime
-                }
-            }),
-            prisma.site.update({
-                where: { id },
-                data: {
-                    status,
-                    responseTime,
-                    totalChecks: { increment: 1 },
-                    successfulChecks: status === 'up' ? { increment: 1 } : undefined
-                }
-            })
-        ])
+        // Create status check
+        await prisma.statusCheck.create({
+            data: {
+                siteId: id,
+                status,
+                responseTime
+            }
+        })
+
+        // Update site status
+        await prisma.site.update({
+            where: { id },
+            data: {
+                status,
+                responseTime,
+                totalChecks: { increment: 1 },
+                successfulChecks: status === 'up' ? { increment: 1 } : undefined
+            }
+        })
 
         return NextResponse.json({
             status,
