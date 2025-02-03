@@ -1,8 +1,8 @@
-import { calculateUptime } from "@/app/utils/uptime";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/auth/options";
 import prisma from "@/lib/prisma";
+import { getSiteHealth } from "@/app/utils/monitoring";
 
 export const dynamic = 'force-dynamic'
 
@@ -117,15 +117,21 @@ export async function GET() {
         }
 
         const sites = await prisma.site.findMany({
-            where: { userId: session.user.id }
+            where: { userId: session.user.id },
+            include: {
+                checks: {
+                    orderBy: { timestamp: "desc" },
+                    take: 10
+                }
+            }
         })
 
-        const sitesWithUptime = sites.map(site => ({
+        const sitesWithHealth = sites.map(site => ({
             ...site,
-            uptime: calculateUptime(site)
+            health: getSiteHealth(site)
         }))
 
-        return NextResponse.json(sitesWithUptime)
+        return NextResponse.json(sitesWithHealth)
 
     } catch (error) {
         console.error('[SITES_GET] Error:', error)

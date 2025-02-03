@@ -1,11 +1,11 @@
 'use client'
 
 import Link from "next/link"
-import { calculateUptime } from "@/app/utils/uptime"
 import { toast } from "sonner"
+import { getSiteHealth, formatDuration } from "@/app/utils/monitoring"
 
 export default function SiteCard({ site }) {
-    const uptime = calculateUptime(site)
+    const health = getSiteHealth(site)
 
     const refreshSite = async (siteId) => {
         const toastId = toast.loading('Refreshing site status...')
@@ -31,29 +31,42 @@ export default function SiteCard({ site }) {
                         <p className="text-gray-500 text-sm break-all">{site.url}</p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        site.status === 'up' 
+                        health.status === 'healthy' 
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                            : site.status === 'down' 
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' 
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                            : health.status === 'warning'
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                     }`}>
-                        {site.status}
+                        {health.status}
                     </span>
                 </div>
 
                 <div className="space-y-3">
                     <div className="flex justify-between items-center">
                         <span className="text-gray-600 dark:text-gray-400">Uptime</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{uptime.toFixed(2)}%</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{health.uptime.toFixed(2)}%</span>
                     </div>
                     <div className="flex justify-between items-center">
                         <span className="text-gray-600 dark:text-gray-400">Response Time</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{site.responseTime}ms</span>
+                        <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                                {health.responseTime.average}ms
+                            </span>
+                            {health.responseTime.trend !== 'stable' && (
+                                <span className={`text-xs ${
+                                    health.responseTime.trend === 'improving' 
+                                        ? 'text-green-600 dark:text-green-400'
+                                        : 'text-red-600 dark:text-red-400'
+                                }`}>
+                                    {health.responseTime.improvement}%
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <div className="flex justify-between items-center">
                         <span className="text-gray-600 dark:text-gray-400">Last Checked</span>
                         <span className="text-gray-500">
-                            {new Date(site.updatedAt).toLocaleTimeString()}
+                            {formatDuration(Date.now() - new Date(health.lastCheck).getTime())} ago
                         </span>
                     </div>
                 </div>

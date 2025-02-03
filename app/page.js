@@ -2,9 +2,18 @@ import Link from 'next/link'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/auth/options"
 import { features } from '@/constants/features'
+import { getSiteHealth } from "@/app/utils/monitoring"
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
+
+  // If you're displaying any site metrics in the homepage, update them:
+  const formatSiteStats = (sites) => {
+    return sites.map(site => ({
+      ...site,
+      health: getSiteHealth(site)
+    }))
+  }
 
   return (
     <div className="min-h-screen">

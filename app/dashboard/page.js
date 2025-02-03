@@ -1,11 +1,10 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/auth/options"
 import { redirect } from "next/navigation"
-import Link from "next/link"
 import prisma from "@/lib/prisma"
 import AddSiteForm from "@/components/AddSiteForm"
-import { calculateUptime } from "../utils/uptime"
 import SiteCard from "@/components/SiteCard"
+import { getSiteHealth } from "@/app/utils/monitoring"
 
 export default async function Dashboard() {
     const session = await getServerSession(authOptions)
@@ -25,8 +24,15 @@ export default async function Dashboard() {
     })
 
     const totalSites = sites.length;
-    const upSites = sites.filter(site => site.status === 'up').length;
-    const averageResponse = sites.reduce((acc, site) => acc + site.responseTime, 0) / totalSites || 0;
+    const healthyStats = sites.reduce((acc, site) => {
+        const health = getSiteHealth(site)
+        return {
+            upSites: acc.upSites + (health.status === 'healthy' ? 1 : 0),
+            totalResponseTime: acc.totalResponseTime + health.responseTime.average
+        }
+    }, { upSites: 0, totalResponseTime: 0 })
+
+    const averageResponse = totalSites ? healthyStats.totalResponseTime / totalSites : 0;
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -52,7 +58,7 @@ export default async function Dashboard() {
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Sites Up</h3>
-                        <p className="text-2xl font-semibold text-green-600">{upSites}/{totalSites}</p>
+                        <p className="text-2xl font-semibold text-green-600">{healthyStats.upSites}/{totalSites}</p>
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Response Time</h3>
