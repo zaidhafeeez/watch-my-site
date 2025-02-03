@@ -32,7 +32,6 @@ export async function POST(req) {
 }
 
 async function handleSingleCheck(id) {
-    const startTime = Date.now()
     const site = await prisma.site.findUnique({
         where: { id },
         select: { url: true }
