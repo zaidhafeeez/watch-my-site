@@ -9,45 +9,40 @@ export async function DELETE(req, { params }) {
         const { id } = params;
 
         if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            )
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Verify site exists and belongs to user
+        // Optimize site verification with caching
         const site = await prisma.site.findUnique({
             where: { id },
-            select: { userId: true }
+            select: { userId: true },
+            cacheStrategy: { ttl: 60 }
         })
 
         if (!site) {
-            return NextResponse.json(
-                { error: 'Site not found' },
-                { status: 404 }
-            )
+            return NextResponse.json({ error: 'Site not found' }, { status: 404 })
         }
 
         if (site.userId !== session.user.id) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 403 }
-            )
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
-        // Delete site and related checks in a transaction
+        // Optimize deletion with a more efficient transaction
         await prisma.$transaction([
+            // Delete checks first to reduce lock time
             prisma.statusCheck.deleteMany({
                 where: { siteId: id }
             }),
+            // Then delete the site
             prisma.site.delete({
                 where: { id }
             })
-        ])
-
-        return NextResponse.json({
-            message: 'Site deleted successfully'
+        ], {
+            timeout: 10000, // 10s timeout
+            isolationLevel: 'ReadCommitted' // Less strict isolation for better performance
         })
+
+        return NextResponse.json({ message: 'Site deleted successfully' })
 
     } catch (error) {
         console.error('[SITE_DELETE] Error:', error)
