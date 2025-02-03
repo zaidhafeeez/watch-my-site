@@ -3,7 +3,7 @@
 import { toast } from 'sonner'
 import { useState } from 'react'
 
-export default function AddSiteForm({ userId }) {
+export default function AddSiteForm({ userId, onSiteAdded }) {
     const [name, setName] = useState('')
     const [url, setUrl] = useState('')
 
@@ -27,6 +27,7 @@ export default function AddSiteForm({ userId }) {
 
             toast.dismiss(toastId)
             toast.success(data.message || 'Site added successfully')
+            onSiteAdded?.(data.site)
             setName('')
             setUrl('')
         } catch (error) {

@@ -5,8 +5,9 @@ import Link from "next/link"
 import { toast } from "sonner"
 import { getSiteHealth } from "@/app/utils/monitoring"
 import { getRelativeTimeString } from "@/app/utils/time"
+import DeleteSiteButton from './DeleteSiteButton'
 
-export default function SiteCard({ site }) {
+export default function SiteCard({ site, onDelete }) {
     const health = getSiteHealth(site)
     const [lastChecked, setLastChecked] = useState('just now')
 
@@ -86,12 +87,15 @@ export default function SiteCard({ site }) {
                 </div>
 
                 <div className="mt-6 flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <Link
-                        href={`/dashboard/${site.id}`}
-                        className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm"
-                    >
-                        View History →
-                    </Link>
+                    <div className="flex items-center space-x-4">
+                        <Link
+                            href={`/dashboard/${site.id}`}
+                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm"
+                        >
+                            View History →
+                        </Link>
+                        <DeleteSiteButton siteId={site.id} onDelete={onDelete} />
+                    </div>
                     <button
                         onClick={() => refreshSite(site.id)}
                         className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
