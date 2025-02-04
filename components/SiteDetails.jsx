@@ -1,8 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { getSiteHealth } from "@/app/utils/monitoring"
+import DeleteSiteButton from './DeleteSiteButton'
 
-export default function SiteDetails({ site }) {
+export default function SiteDetails({ site, onDelete }) {
+    const [isMenuOpen, setIsMenuOpen] = useState(false)
+
     if (!site) {
         return (
             <div className="h-full flex flex-col items-center justify-center p-8">
@@ -32,12 +36,43 @@ export default function SiteDetails({ site }) {
                             {site.url}
                         </a>
                     </div>
-                    <div className={`px-4 py-2 rounded-full ${
-                        health.status === 'healthy' 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                    }`}>
-                        {health.status === 'healthy' ? 'Operational' : 'Down'}
+                    <div className="flex items-center space-x-4">
+                        <div className={`px-4 py-2 rounded-full ${
+                            health.status === 'healthy' 
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                        }`}>
+                            {health.status === 'healthy' ? 'Operational' : 'Down'}
+                        </div>
+                        
+                        {/* Three Dots Menu */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            >
+                                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                </svg>
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {isMenuOpen && (
+                                <>
+                                    <div 
+                                        className="fixed inset-0 z-10"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    />
+                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 py-1 border border-gray-200 dark:border-gray-700">
+                                        <DeleteSiteButton
+                                            siteId={site.id}
+                                            onDelete={onDelete}
+                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 dark:text-red-400"
+                                        />
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
 

@@ -112,7 +112,10 @@ export default function DashboardContent({ initialSites, user }) {
                         </div>
 
                         <div className="transition-all duration-200 ease-in-out">
-                            <SiteDetails site={selectedSite} />
+                            <SiteDetails 
+                                site={selectedSite} 
+                                onDelete={handleSiteDelete}  // Add this line
+                            />
                         </div>
                     </div>
                 </div>
