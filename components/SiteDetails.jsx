@@ -26,8 +26,8 @@ export default function SiteDetails({ site, onDelete }) {
     const health = getSiteHealth(site)
 
     return (
-        <div className="space-y-6 animate-fadeIn">
-            <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg shadow-gray-200/20 dark:shadow-gray-900/30">
+        <div className="space-y-8 animate-fadeIn pr-6">
+            <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl p-8 border border-gray-200/50 dark:border-gray-700/50 shadow-lg shadow-gray-200/20 dark:shadow-gray-900/30">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{site.name}</h1>
@@ -132,7 +132,7 @@ export default function SiteDetails({ site, onDelete }) {
 
             {/* Recent Checks Section */}
             <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg shadow-gray-200/20 dark:shadow-gray-900/30 overflow-hidden">
-                <div className="p-6">
+                <div className="p-8">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Checks</h2>
                     <div className="space-y-4">
                         {site.checks.map((check) => (

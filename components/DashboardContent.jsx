@@ -61,7 +61,7 @@ export default function DashboardContent({ initialSites, user }) {
             />
 
             {/* Main Content */}
-            <div className="flex h-[calc(100vh-12rem)]">
+            <div className="flex h-[calc(100vh-14rem)] max-w-[2000px] mx-auto px-6">
                 {/* Sidebar */}
                 <div className={`
                     fixed inset-y-0 left-0 transform lg:relative lg:translate-x-0 
@@ -83,7 +83,7 @@ export default function DashboardContent({ initialSites, user }) {
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-auto p-6">
+                <div className="flex-1 overflow-auto py-6 pl-6 pr-0 mr-6">
                     <SiteDetails 
                         site={selectedSite} 
                         onDelete={handleSiteDelete}
