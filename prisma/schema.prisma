@@ -28,6 +28,8 @@ model Site {
   checks           StatusCheck[] // This line must exist
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
+  lastChecked      DateTime?
+  nextCheckAt      DateTime?
 }
 
 model StatusCheck {

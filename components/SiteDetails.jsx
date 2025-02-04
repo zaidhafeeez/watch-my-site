@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { getSiteHealth } from "@/app/utils/monitoring"
 import DeleteSiteButton from './DeleteSiteButton'
+import { toast } from 'react-toastify';
 
 export default function SiteDetails({ site, onDelete }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -25,6 +26,25 @@ export default function SiteDetails({ site, onDelete }) {
 
     const health = getSiteHealth(site)
 
+    const handleManualCheck = async () => {
+        try {
+            const response = await fetch(`/api/sites/${site.id}/check`, {
+                method: 'POST'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to check site');
+            }
+
+            // Refresh site data after check
+            // You might want to implement a refresh callback here
+            
+            toast.success('Site check completed');
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
     return (
         <div className="space-y-8 animate-fadeIn pr-6">
             <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl p-8 border border-gray-200/50 dark:border-gray-700/50 shadow-lg shadow-gray-200/20 dark:shadow-gray-900/30">
@@ -37,6 +57,14 @@ export default function SiteDetails({ site, onDelete }) {
                         </a>
                     </div>
                     <div className="flex items-center space-x-4">
+                        <button
+                            onClick={handleManualCheck}
+                            className="inline-flex items-center px-4 py-2 border border-transparent
+                                     text-sm font-medium rounded-md text-white bg-blue-600
+                                     hover:bg-blue-700"
+                        >
+                            Check Now
+                        </button>
                         <div className={`px-4 py-2 rounded-full ${
                             health.status === 'healthy' 
                             ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 

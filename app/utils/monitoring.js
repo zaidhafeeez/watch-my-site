@@ -68,16 +68,28 @@ export function calculateResponseMetrics(site) {
  * Get site health status with detailed metrics
  */
 export function getSiteHealth(site) {
-    const uptime = calculateUptime(site)
-    const responseMetrics = calculateResponseMetrics(site)
+    const recentChecks = site.checks.slice(0, 10)
+    
+    // Calculate uptime percentage
+    const uptime = site.totalChecks > 0
+        ? (site.successfulChecks / site.totalChecks) * 100
+        : 100
+
+    // Calculate average response time from recent checks
+    const avgResponseTime = recentChecks.length > 0
+        ? recentChecks.reduce((sum, check) => sum + check.responseTime, 0) / recentChecks.length
+        : 0
 
     return {
-        status: uptime > 99 ? 'healthy' : uptime > 95 ? 'warning' : 'critical',
-        uptime,
-        responseTime: responseMetrics,
-        lastCheck: site.checks?.[0]?.timestamp || site.updatedAt,
-        checksCount: site.totalChecks,
-        successRate: (site.successfulChecks / site.totalChecks) * 100 || 100
+        status: site.status === 'healthy' ? 'healthy' : 'down',
+        uptime: Math.round(uptime * 100) / 100,
+        responseTime: {
+            average: Math.round(avgResponseTime),
+            min: Math.min(...recentChecks.map(c => c.responseTime)),
+            max: Math.max(...recentChecks.map(c => c.responseTime))
+        },
+        ssl: recentChecks[0]?.sslInfo || null,
+        dns: recentChecks[0]?.dnsInfo || null
     }
 }
 

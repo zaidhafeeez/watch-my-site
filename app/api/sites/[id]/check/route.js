@@ -4,10 +4,10 @@ import { authOptions } from "@/app/auth/options";
 import prisma from "@/lib/prisma";
 import { performAdvancedHealthCheck } from "@/lib/services/healthCheck";
 
-export async function POST(req, { params }) {
+export async function POST(request, context) {
     try {
         const session = await getServerSession(authOptions);
-        const { id } = params;
+        const id = context.params.id; // Access id from context.params
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
