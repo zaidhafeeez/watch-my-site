@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma-edge";
 import { performAdvancedHealthCheck } from "@/lib/services/healthCheck";
 
+// Main characteristics:
+// - Uses Edge Runtime
+// - Basic HTTP check only
+// - Simple up/down status
+// - Basic response time measurement
+// - No detailed health information
+// - Designed for high-performance bulk checks
+// - Uses prisma-edge client
+
 export const runtime = 'edge'
 export const preferredRegion = 'auto'
 export const dynamic = 'force-dynamic'
