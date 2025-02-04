@@ -60,8 +60,8 @@ export default function DashboardContent({ initialSites, user }) {
                 onSiteAdded={handleSiteAdded}
             />
 
-            {/* Main Content */}
-            <div className="flex h-[calc(100vh-14rem)] max-w-[2000px] mx-auto px-6">
+            {/* Main Content - adjusted height calculation */}
+            <div className="flex h-[calc(100vh-13rem)] max-w-[2000px] mx-auto px-6 pt-6">
                 {/* Sidebar */}
                 <div className={`
                     fixed inset-y-0 left-0 transform lg:relative lg:translate-x-0 
