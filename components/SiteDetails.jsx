@@ -154,6 +154,74 @@ export default function SiteDetails({ site, onDelete }) {
                     </div>
                 </div>
             </div>
+
+            {/* Historical Uptime Graphs */}
+            <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg shadow-gray-200/20 dark:shadow-gray-900/30 overflow-hidden">
+                <div className="p-8">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Historical Uptime</h2>
+                    {/* Add your graph component here */}
+                </div>
+            </div>
+
+            {/* Response Time Charts */}
+            <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg shadow-gray-200/20 dark:shadow-gray-900/30 overflow-hidden">
+                <div className="p-8">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Response Time</h2>
+                    {/* Add your chart component here */}
+                </div>
+            </div>
+
+            {/* Incident Timeline */}
+            <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg shadow-gray-200/20 dark:shadow-gray-900/30 overflow-hidden">
+                <div className="p-8">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Incident Timeline</h2>
+                    {/* Add your timeline component here */}
+                </div>
+            </div>
+
+            {/* Site Configuration Panel */}
+            <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg shadow-gray-200/20 dark:shadow-gray-900/30 overflow-hidden">
+                <div className="p-8">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Site Configuration</h2>
+                    {/* Add your configuration panel component here */}
+                </div>
+            </div>
+
+            {/* SSL Certificate Info */}
+            {site.checks[0]?.sslInfo && (
+                <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl p-6">
+                    <h2 className="text-lg font-semibold mb-4">SSL Certificate</h2>
+                    <div className="space-y-2">
+                        <div className="flex justify-between">
+                            <span>Status</span>
+                            <span className={site.checks[0].sslInfo.valid ? 'text-green-500' : 'text-red-500'}>
+                                {site.checks[0].sslInfo.valid ? 'Valid' : 'Invalid'}
+                            </span>
+                        </div>
+                        {site.checks[0].sslInfo.grade && (
+                            <div className="flex justify-between">
+                                <span>SSL Grade</span>
+                                <span>{site.checks[0].sslInfo.grade}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* DNS Records Viewer */}
+            {site.checks[0]?.dnsInfo && (
+                <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-xl p-6">
+                    <h2 className="text-lg font-semibold mb-4">DNS Records</h2>
+                    <div className="space-y-2">
+                        {site.checks[0].dnsInfo.records?.map((record, i) => (
+                            <div key={i} className="flex justify-between">
+                                <span>A Record</span>
+                                <span>{record}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

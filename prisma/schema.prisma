@@ -36,7 +36,15 @@ model StatusCheck {
   status       String
   responseTime Int
   timestamp    DateTime @default(now())
-  site         Site     @relation(fields: [siteId], references: [id])
+  statusCode   Int?
+  headers      Json?
+  sslInfo      Json?
+  dnsInfo      Json?
+  error        String?
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId])
+  @@index([timestamp])
 }
 
 model User {

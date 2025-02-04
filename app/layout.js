@@ -9,6 +9,13 @@ import { authOptions } from "@/app/auth/options"
 import ClientProvider from '@/components/ClientProvider';
 import { Toaster } from 'sonner';
 
+// Add progressive features:
+// - PWA support
+// - Offline capabilities
+// - Push notifications
+// - Real-time updates
+// - Background sync
+
 const geistSans = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans",

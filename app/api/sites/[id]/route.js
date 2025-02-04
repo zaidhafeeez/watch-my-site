@@ -52,3 +52,10 @@ export async function DELETE(req, { params }) {
         )
     }
 }
+
+// Add new API endpoints:
+// SSL certificate checks
+// DNS record monitoring
+// Custom HTTP checks
+// Maintenance window management
+// Alert configuration
