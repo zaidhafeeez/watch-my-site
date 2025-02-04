@@ -24,11 +24,13 @@ export async function POST(req) {
             sites.map(async (site) => {
                 try {
                     const result = await performAdvancedHealthCheck(site);
+                    const isUp = result.status === 'up';
+                    
                     await prisma.$transaction([
                         prisma.statusCheck.create({
                             data: {
                                 siteId: site.id,
-                                status: result.status,
+                                status: isUp ? 'up' : 'down',
                                 responseTime: result.responseTime,
                                 statusCode: result.statusCode,
                                 headers: result.headers || null,
@@ -40,14 +42,17 @@ export async function POST(req) {
                         prisma.site.update({
                             where: { id: site.id },
                             data: {
-                                status: result.status,
+                                status: isUp ? 'up' : 'down',
                                 responseTime: result.responseTime,
                                 totalChecks: { increment: 1 },
-                                successfulChecks: result.status === 'healthy' ? { increment: 1 } : undefined
+                                successfulChecks: isUp ? { increment: 1 } : undefined,
+                                lastChecked: new Date(),
+                                nextCheckAt: getNextCheckTime(5)
                             }
                         })
                     ]);
-                    return { success: true, site: site.name, ...result };
+
+                    return { success: true, site: site.name, status: result.status };
                 } catch (error) {
                     return { success: false, site: site.name, error: error.message };
                 }
