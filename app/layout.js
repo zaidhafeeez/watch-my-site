@@ -68,16 +68,11 @@ export default function RootLayout({ children }) {
       `}>
         <ClientProvider session={session}>
           <CronInitializer />
-
           <Navbar session={session} />
-
-          <main className="flex-1 pt-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {children}
-              <SpeedInsights />
-            </div>
+          <main className="flex-1">
+            {children}
+            <SpeedInsights />
           </main>
-
           <Footer />
         </ClientProvider>
         <Toaster richColors position="top-right" />
