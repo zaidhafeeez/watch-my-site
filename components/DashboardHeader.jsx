@@ -4,7 +4,7 @@ import AddSiteForm from "./AddSiteForm"
 
 export default function DashboardHeader({ user, stats, onSiteAdded }) {
     return (
-        <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50">
+        <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50">
             <div className="max-w-[2000px] mx-auto px-6">
                 <div className="h-24 flex items-center justify-between">
                     <div>

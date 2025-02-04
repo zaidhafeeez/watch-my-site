@@ -67,15 +67,18 @@ export default function RootLayout({ children }) {
         min-h-screen flex flex-col
       `}>
         <ClientProvider session={session}>
-          <CronInitializer />
-          <Navbar session={session} />
-          <main className="flex-1">
-            {children}
-            <SpeedInsights />
-          </main>
-          <Footer />
+          <div className="relative z-0">
+            <CronInitializer />
+            <Navbar session={session} />
+            <main className="flex-1">
+              {children}
+              <SpeedInsights />
+            </main>
+            <Footer />
+          </div>
         </ClientProvider>
         <Toaster richColors position="top-right" />
+        {/* Modals will be rendered here by Portal */}
       </body>
     </html>
   );

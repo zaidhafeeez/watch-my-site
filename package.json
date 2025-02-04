@@ -28,7 +28,8 @@
     "node-cron": "^3.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sonner": "^1.7.4"
+    "sonner": "^1.7.4",
+    "framer-motion": "^10.16.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
