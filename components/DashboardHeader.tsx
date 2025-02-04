@@ -1,6 +1,8 @@
 
 'use client'
 
+import React from 'react';
+
 import { User, Site } from '@/lib/types'
 import { Button } from './ui/button'
 import AddSiteForm from './AddSiteForm'

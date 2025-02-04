@@ -5,6 +5,8 @@
         "paths": {
             "@/*": ["./*"]
         },
+        "jsx": "react",
+        "esModuleInterop": true
         // ... other options ...
     }
 }
