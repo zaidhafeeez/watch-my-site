@@ -2,14 +2,14 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
-    "build": {
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "dependsOn": ["generate"]
-    },
     "generate": {
       "inputs": ["prisma/schema.prisma"],
       "outputs": ["node_modules/.prisma/client"]
+    },
+    "build": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "DATABASE_URL", "DIRECT_URL", "CRON_SECRET", "NEXTAUTH_*"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "dependsOn": ["generate"]
     },
     "lint": {},
     "check-types": {},
