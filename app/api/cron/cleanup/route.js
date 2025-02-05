@@ -65,3 +65,44 @@ export async function GET(req) {
         )
     }
 }
+
+export async function POST(req) {
+    try {
+        if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+        // Delete old checks in batches
+        const deleteResult = await prisma.statusCheck.deleteMany({
+            where: {
+                timestamp: { lt: thirtyDaysAgo }
+            }
+        });
+
+        // Clean up any orphaned data
+        await prisma.$transaction([
+            prisma.site.deleteMany({
+                where: { user: null }
+            }),
+            prisma.user.deleteMany({
+                where: {
+                    AND: [
+                        { emailVerified: null },
+                        { createdAt: { lt: thirtyDaysAgo } }
+                    ]
+                }
+            })
+        ]);
+
+        return NextResponse.json({
+            success: true,
+            deletedChecks: deleteResult.count
+        });
+
+    } catch (error) {
+        console.error('[CLEANUP] Error:', error);
+        return NextResponse.json({ error: 'Cleanup failed' }, { status: 500 });
+    }
+}
