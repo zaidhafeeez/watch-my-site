@@ -15,10 +15,6 @@
     {
       "path": "/api/cron/ssl-check",
       "schedule": "0 12 * * *"
-    },
-    {
-      "path": "/api/cron/ping",
-      "schedule": "*/1 * * * *"
     }
   ],
   "headers": [
