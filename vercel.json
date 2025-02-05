@@ -1,20 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/sites/check-all",
-      "schedule": "*/5 * * * *"
-    },
-    {
       "path": "/api/cron/cleanup",
       "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/daily-report",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/ssl-check",
-      "schedule": "0 12 * * *"
     }
   ],
   "headers": [

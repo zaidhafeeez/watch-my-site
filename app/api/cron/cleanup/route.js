@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
 const AUTH_TOKEN = process.env.CRON_SECRET
-const RETENTION_HOURS = 24
+const RETENTION_DAYS = 30
 
-export async function GET(req) {
+export async function POST(req) {
     const authHeader = req.headers.get('authorization')
 
     if (authHeader !== `Bearer ${AUTH_TOKEN}`) {
@@ -14,75 +14,17 @@ export async function GET(req) {
     try {
         const startTime = Date.now()
         const cutoffDate = new Date()
-        cutoffDate.setHours(cutoffDate.getHours() - RETENTION_HOURS)
-
-        // Delete old checks in smaller batches
-        const { count } = await prisma.statusCheck.deleteMany({
-            where: {
-                timestamp: {
-                    lt: cutoffDate
-                }
-            }
-        })
-
-        // Update site statistics after cleanup
-        const sites = await prisma.site.findMany({
-            select: { id: true }
-        })
-
-        for (const site of sites) {
-            const latestCheck = await prisma.statusCheck.findFirst({
-                where: { siteId: site.id },
-                orderBy: { timestamp: 'desc' }
-            })
-
-            if (latestCheck) {
-                await prisma.site.update({
-                    where: { id: site.id },
-                    data: {
-                        status: latestCheck.status,
-                        responseTime: latestCheck.responseTime
-                    }
-                })
-            }
-        }
-
-        const duration = Date.now() - startTime
-
-        return NextResponse.json({
-            success: true,
-            deletedChecks: count,
-            updatedSites: sites.length,
-            retentionHours: RETENTION_HOURS,
-            durationMs: duration
-        })
-
-    } catch (error) {
-        console.error('[CRON_CLEANUP] Error:', error)
-        return NextResponse.json(
-            { error: 'Cleanup failed' },
-            { status: 500 }
-        )
-    }
-}
-
-export async function POST(req) {
-    try {
-        if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        cutoffDate.setDate(cutoffDate.getDate() - RETENTION_DAYS)
 
         // Delete old checks in batches
-        const deleteResult = await prisma.statusCheck.deleteMany({
+        const { count } = await prisma.statusCheck.deleteMany({
             where: {
-                timestamp: { lt: thirtyDaysAgo }
+                timestamp: { lt: cutoffDate }
             }
-        });
+        })
 
-        // Clean up any orphaned data
-        await prisma.$transaction([
+        // Clean up orphaned data
+        const cleanupResult = await prisma.$transaction([
             prisma.site.deleteMany({
                 where: { user: null }
             }),
@@ -90,19 +32,28 @@ export async function POST(req) {
                 where: {
                     AND: [
                         { emailVerified: null },
-                        { createdAt: { lt: thirtyDaysAgo } }
+                        { createdAt: { lt: cutoffDate } }
                     ]
                 }
             })
-        ]);
+        ])
 
         return NextResponse.json({
             success: true,
-            deletedChecks: deleteResult.count
-        });
+            deletedChecks: count,
+            cleanedOrphanedData: {
+                sites: cleanupResult[0].count,
+                users: cleanupResult[1].count
+            },
+            retentionDays: RETENTION_DAYS,
+            durationMs: Date.now() - startTime
+        })
 
     } catch (error) {
-        console.error('[CLEANUP] Error:', error);
-        return NextResponse.json({ error: 'Cleanup failed' }, { status: 500 });
+        console.error('[CLEANUP] Error:', error)
+        return NextResponse.json(
+            { error: 'Cleanup failed' },
+            { status: 500 }
+        )
     }
 }
