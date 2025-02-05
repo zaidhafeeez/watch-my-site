@@ -1,8 +1,35 @@
 {
   "crons": [
     {
+      "path": "/api/sites/check-all",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/cleanup",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/daily-report",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/ssl-check",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/ping",
+      "schedule": "*/1 * * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
     }
   ]
 }
