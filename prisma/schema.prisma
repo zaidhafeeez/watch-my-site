@@ -57,9 +57,22 @@ model User {
   emailVerified      DateTime?
   verificationToken  String?   @unique
   verificationExpiry DateTime?
+  resetToken         String?   @unique
+  resetTokenExpiry   DateTime?
+  rememberToken      String?   @unique
+  lastLogin          DateTime?
+  loginAttempts      Int       @default(0)
+  lockedUntil        DateTime?
+  role               String    @default("user")
+  image              String?
   sites              Site[]
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+
+  @@index([email])
+  @@index([verificationToken])
+  @@index([resetToken])
+  @@index([rememberToken])
 }
 
 model VerificationToken {
@@ -68,4 +81,32 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Add new model for tracking login attempts
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String
+  userAgent String?
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([ip])
+  @@index([createdAt])
+}
+
+// Add new model for account activity logging
+model AccountActivity {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String
+  ip          String?
+  userAgent   String?
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
