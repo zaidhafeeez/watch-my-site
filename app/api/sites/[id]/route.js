@@ -1,61 +1,82 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/auth/options";
-import prisma from "@/lib/prisma";
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/auth/options'
 
-export async function DELETE(req, { params }) {
+export async function GET(request, context) {
     try {
-        const session = await getServerSession(authOptions);
-        const { id } = params;
+        const session = await getServerSession(authOptions)
+        const { params } = await context
 
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        if (!session) {
+            return NextResponse.json(
+                { message: 'Unauthorized' },
+                { status: 401 }
+            )
         }
 
-        // Optimize site verification with caching
-        const site = await prisma.site.findUnique({
-            where: { id },
-            select: { userId: true },
-            cacheStrategy: { ttl: 60 }
+        const site = await prisma.site.findFirst({
+            where: {
+                id: params.id,
+                userId: session.user.id
+            }
         })
 
         if (!site) {
-            return NextResponse.json({ error: 'Site not found' }, { status: 404 })
+            return NextResponse.json(
+                { message: 'Site not found' },
+                { status: 404 }
+            )
         }
 
-        if (site.userId !== session.user.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-        }
-
-        // Optimize deletion with a more efficient transaction
-        await prisma.$transaction([
-            // Delete checks first to reduce lock time
-            prisma.statusCheck.deleteMany({
-                where: { siteId: id }
-            }),
-            // Then delete the site
-            prisma.site.delete({
-                where: { id }
-            })
-        ], {
-            timeout: 10000, // 10s timeout
-            isolationLevel: 'ReadCommitted' // Less strict isolation for better performance
-        })
-
-        return NextResponse.json({ message: 'Site deleted successfully' })
-
+        return NextResponse.json(site)
     } catch (error) {
-        console.error('[SITE_DELETE] Error:', error)
+        console.error('Site fetch error:', error)
         return NextResponse.json(
-            { error: 'Failed to delete site' },
+            { message: 'Internal server error' },
             { status: 500 }
         )
     }
 }
 
-// Add new API endpoints:
-// SSL certificate checks
-// DNS record monitoring
-// Custom HTTP checks
-// Maintenance window management
-// Alert configuration
+export async function DELETE(request, context) {
+    try {
+        const session = await getServerSession(authOptions)
+        const { params } = await context
+
+        if (!session) {
+            return NextResponse.json(
+                { message: 'Unauthorized' },
+                { status: 401 }
+            )
+        }
+
+        const site = await prisma.site.findFirst({
+            where: {
+                id: params.id,
+                userId: session.user.id
+            }
+        })
+
+        if (!site) {
+            return NextResponse.json(
+                { message: 'Site not found' },
+                { status: 404 }
+            )
+        }
+
+        await prisma.site.delete({
+            where: { id: params.id }
+        })
+
+        return NextResponse.json({
+            message: 'Site deleted successfully'
+        })
+    } catch (error) {
+        console.error('Site deletion error:', error)
+        return NextResponse.json(
+            { message: 'Internal server error' },
+            { status: 500 }
+        )
+    }
+}
