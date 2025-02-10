@@ -64,15 +64,14 @@ export const authOptions = {
             }
             return session
         },
-        async jwt({ token, user, account, profile }) {
+        async jwt({ token, user }) {
             if (user) {
                 token.role = user.role
             }
             return token
         },
         async signIn({ user, account, profile }) {
-            if (account.provider === "github") {
-                // Log the GitHub sign in
+            if (account?.provider === "github" && profile?.login) {
                 await prisma.accountActivity.create({
                     data: {
                         userId: user.id,
