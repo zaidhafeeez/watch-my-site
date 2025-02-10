@@ -1,20 +1,17 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import prisma from "@/lib/prisma";
-import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
-import { verifyPassword } from "@/lib/auth-utils";
+import { verifyPassword } from "@/lib/auth-utils"
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import CredentialsProvider from "next-auth/providers/credentials"
+import GitHubProvider from "next-auth/providers/github"
+import prisma from "@/lib/db"
 
 export const authOptions = {
+    debug: process.env.NODE_ENV === 'development',
     adapter: PrismaAdapter(prisma),
     providers: [
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        }),
         GitHubProvider({
-            clientId: process.env.GITHUB_ID,
-            clientSecret: process.env.GITHUB_SECRET,
+            clientId: process.env.GITHUB_ID || '',
+            clientSecret: process.env.GITHUB_SECRET || '',
+            allowDangerousEmailAccountLinking: true,
         }),
         CredentialsProvider({
             name: "credentials",
@@ -50,31 +47,40 @@ export const authOptions = {
             }
         })
     ],
-    session: { 
+    session: {
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
-    pages: { 
+    pages: {
         signIn: "/auth/signin",
         verifyRequest: "/auth/verify-request",
         error: "/auth/error",
     },
     callbacks: {
-        async jwt({ token, user, account }) {
-            if (user) {
-                token.id = user.id;
-                token.role = user.role;
-            }
-            if (account) {
-                token.provider = account.provider;
-            }
-            return token;
-        },
         async session({ session, token }) {
-            session.user.id = token.id;
-            session.user.role = token.role;
-            session.provider = token.provider;
-            return session;
+            if (token && session.user) {
+                session.user.id = token.sub;
+                session.user.role = token.role;
+            }
+            return session
+        },
+        async jwt({ token, user }) {
+            if (user) {
+                token.role = user.role
+            }
+            return token
+        },
+        async signIn({ user, account, profile }) {
+            if (account?.provider === "github" && profile?.login) {
+                await prisma.accountActivity.create({
+                    data: {
+                        userId: user.id,
+                        action: 'GITHUB_SIGNIN',
+                        description: `Signed in with GitHub (${profile.login})`
+                    }
+                })
+            }
+            return true
         }
     },
     events: {

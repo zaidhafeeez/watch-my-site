@@ -1,15 +1,25 @@
 import { NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
-export const config = {
-    matcher: '/',
+export async function middleware(request) {
+    // Check if the request is for an API route
+    if (request.nextUrl.pathname.startsWith('/api/user')) {
+        const token = await getToken({ req: request })
+
+        // Return unauthorized if no token exists
+        if (!token) {
+            return NextResponse.json(
+                { message: 'Unauthorized' },
+                { status: 401 }
+            )
+        }
+    }
+
+    return NextResponse.next()
 }
 
-export function middleware(request) {
-    const response = NextResponse.next()
-
-    // Cache assets for 1 hour
-    response.headers.set('Cache-Control', 'public, s-maxage=3600')
-    response.headers.set('CDN-Cache-Control', 'public, s-maxage=3600')
-
-    return response
+export const config = {
+    matcher: [
+        '/api/user/:path*'
+    ]
 }

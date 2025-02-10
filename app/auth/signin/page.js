@@ -1,11 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
-export default function SignInPage() {
+function SignInForm() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -26,7 +26,7 @@ export default function SignInPage() {
                 remember
             })
 
-            if (result.error) {
+            if (result?.error) {
                 toast.error(result.error)
             } else {
                 toast.success('Successfully signed in!')
@@ -122,5 +122,14 @@ export default function SignInPage() {
                 </a>
             </p>
         </div >
+    )
+}
+
+// Wrap the main component with Suspense
+export default function SignInPage() {
+    return (
+        <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
+            <SignInForm />
+        </Suspense>
     )
 }
