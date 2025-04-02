@@ -25,7 +25,7 @@
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "framer-motion": "^10.16.4",
-    "next": "15.2.3",
+    "next": "15.2.4",
     "next-auth": "^4.24.11",
     "node-cron": "^3.0.3",
     "react": "^19.0.0",
