@@ -5,7 +5,3 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    assigners:
-      - coderabbitai
-    reviewers:
-      - coderabbitai
